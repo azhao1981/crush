@@ -54,6 +54,16 @@ func newAnthropicClient(opts providerClientOptions, tp AnthropicClientType) Anth
 func createAnthropicClient(opts providerClientOptions, tp AnthropicClientType) anthropic.Client {
 	anthropicClientOptions := []option.RequestOption{}
 
+	// Handle BaseURL if provided
+	if opts.baseURL != "" {
+		resolvedBaseURL, err := config.Get().Resolve(opts.baseURL)
+		if err == nil {
+			anthropicClientOptions = append(anthropicClientOptions, option.WithBaseURL(resolvedBaseURL))
+		} else {
+			slog.Error("Failed to resolve BaseURL", "error", err, "base_url", opts.baseURL)
+		}
+	}
+
 	// Check if Authorization header is provided in extra headers
 	hasBearerAuth := false
 	if opts.extraHeaders != nil {
